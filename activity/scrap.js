@@ -6,6 +6,8 @@ let fs = require("fs");
 let names = process.argv[2];
 let credentialsFile = process.argv[3];
 
+
+
 let url = `https://www.thetoptens.com/${names}/ `;
 console.log("Work start");
 request(url, function (err, response, data) {
@@ -23,28 +25,83 @@ request(url, function (err, response, data) {
 })
 
 
-function parseHTML(data) {
+async function parseHTML(data) {
     // page => cheerio
     let $ = cheerio.load(data);
     let head=`Top 10 ${names}`;
     let allNames=$('div.i');
+    //const exp="";
+//     let allNames=$('hublink');
+//    // console.log(allNames);
     let topName=[];
+    let x="";
     for(let i=0;i<10;i++)
     {
         topName[i]=i+1+" "+$(allNames[i]).find("b").text();
+        x+=`<tr><td>${i+1}</td><td>${topName[i].slice(2)}</td></tr>`;
         
     }
     topName=topName.join("\n");
+    let con=`<!DOCTYPE html>
+    <html>
+    <head>
+    <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    </style>
+    </head>
+    <body>
+    
+    <h1> ${head} </h1>
+    
+    <table>
+    <tr><th>S.No</th><th>Name</th></tr>
+      ${x}
+    </table>
+    
+    </body>
+    </html>`
+
     let tweet=(head+"\n"+topName);
     console.log(tweet);
    // let pdfmake=tweet;
-    fs.writeFileSync("tops.html",tweet);
+    fs.writeFileSync("tops.html",con);
     tweetIt(tweet);
+    let browser = await puppeteer.launch({
+        headless: true,
+        defaultViewport: null,
+        args: ["--start-maximized", "--disable-notifications"],
+        slowMo: 100
+    });
+    //switch (exp)
+    let numberofPages = await browser.pages();
+    let tab = numberofPages[0];
+    await tab.setContent(con);
+  await tab.pdf({ path: "./top10.pdf" });
+  fs.writeFileSync("./tops.html", con);
+  //console.log(final);
+  browser.close();
+  console.log("closed");
+
 };
+
 
 //data is scrapped
 
-async function tweetIt(tweet,pdfmake)
+async function tweetIt(tweet)
 {
     let url, pwd, user;
     let data = await fs.promises.readFile(credentialsFile, "utf-8");
@@ -61,19 +118,7 @@ async function tweetIt(tweet,pdfmake)
     });
     let numberofPages = await browser.pages();
     let tab = numberofPages[0];
-    // goto page
-    // 1. 
     
-    
-  //  let PDFDocument = require('pdfkit');
-   // let fs = require('fs');
-   // let doc = new PDFDocument();
-   // doc.pipe(fs.createWriteStream('tops.pdf'));
-    //pdfmake += `<hr><div>${tweet}</div><hr>`;
-   //await tab.setContent(pdfmake);
-  
-   //await tab.pdf({ path: "./tops.pdf" });
-   //fs.writeFileSync("./tops.html", pdfmake);
     await tab.goto(url, {
         waitUntil: "networkidle2"
     });
@@ -83,7 +128,7 @@ async function tweetIt(tweet,pdfmake)
     await tab.click('div[role="button"][data-focusable="true"]');
     await Promise.all[tab.click('div[role="button"][data-focusable="true"]'), tab.waitForNavigation({ waitUntil: 'networkidle2', timeout: '40000' })]
     console.log("User logged in");
-    //let filedata = await fs.promises.readFile('./tops.txt','utf-8');
+    
 
     await tab.waitForSelector("a[data-testid='SideNav_NewTweet_Button']");
     await tab.click("a[data-testid='SideNav_NewTweet_Button']");

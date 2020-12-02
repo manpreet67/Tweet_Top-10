@@ -1,0 +1,25 @@
+{
+  "name": "top10",
+  "version": "1.0.0",
+  "description": "This project firstly scraps the data of Top-10 list the user inputs and through automation tweet it to your Twitter Account.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manpreet67/Tweet_Top-10.git"
+  },
+  "author": "manpreet",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/manpreet67/Tweet_Top-10/issues"
+  },
+  "homepage": "https://github.com/manpreet67/Tweet_Top-10#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "pdf-puppeteer": "^1.1.10",
+    "puppeteer": "^5.5.0",
+    "request": "^2.88.2"
+  }
+}
